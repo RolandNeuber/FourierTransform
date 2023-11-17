@@ -1,14 +1,9 @@
-﻿using FourierTransform;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
+using FourierTransforms.Operations;
 
-namespace FourierTransform
+namespace FourierTransforms
 {
-	public static class FourierTransforms
+    public static class FourierTransforms
 	{
 		/// <summary>
 		/// Computes the DFT of a given Time-Domain-Signal.

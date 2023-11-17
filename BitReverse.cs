@@ -1,13 +1,6 @@
-﻿using System;
-using System.Buffers.Binary;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
-namespace FourierTransform
+namespace FourierTransforms
 {
 	public static class BitReverse
 	{
@@ -16,12 +9,12 @@ namespace FourierTransform
 			if (!BitOperations.IsPow2(list.Count))
 				throw new ArgumentException("list length must be power of two.");
 			T[] reverse = new T[list.Count];
-            for (int i = 0; i < list.Count; i++)
+			for (int i = 0; i < list.Count; i++)
 			{
 				uint reversedIndex = ReverseBits((uint)i, (uint)BitOperations.Log2((uint)list.Count));
-                reverse[reversedIndex] = list[i];
+				reverse[reversedIndex] = list[i];
 			}
-            return reverse;
+			return reverse;
 		}
 		public static uint ReverseBits(uint number, uint maxBits)
 		{

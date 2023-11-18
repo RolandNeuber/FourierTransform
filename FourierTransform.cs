@@ -3,7 +3,7 @@ using FourierTransforms.Operations;
 
 namespace FourierTransforms
 {
-    public static class FourierTransforms
+	public static class FourierTransforms
 	{
 		/// <summary>
 		/// Computes the DFT of a given Time-Domain-Signal.
@@ -15,23 +15,19 @@ namespace FourierTransforms
 		public static Complex[] DFT(IList<Complex> timeDomainSignal)
 		{
 			if (timeDomainSignal.Count == 0)
-				return timeDomainSignal.ToArray();
+				return [.. timeDomainSignal];
 			if (BitOperations.IsPow2(timeDomainSignal.Count))
 				return FourierTransformOperations.ParallelIterativeDFT(timeDomainSignal);
 			return FourierTransformOperations.DFT(timeDomainSignal);
-			//Complex[] extendedTimeDomainSignal = new Complex[BitOperations.RoundUpToPowerOf2((uint)timeDomainSignal.Count)];
-			//Array.Copy(timeDomainSignal.ToArray(), extendedTimeDomainSignal, timeDomainSignal.Count);
+		}
 
-			//for (int i = timeDomainSignal.Count; i < extendedTimeDomainSignal.Length; i++)
-			//{
-			//	extendedTimeDomainSignal[i] = Complex.Zero;
-			//}
-			
-			//Complex[] frequencyDomainSignal = FourierTransformOperations.ParallelIterativeDFT(extendedTimeDomainSignal);
-			//Complex[] truncatedFrequencyDomainSignal = new Complex[timeDomainSignal.Count];
-			//Array.Copy(frequencyDomainSignal, truncatedFrequencyDomainSignal, timeDomainSignal.Count);
-			
-			//return truncatedFrequencyDomainSignal;
+		public static Complex[] InverseDFT(IList<Complex> frequencyDomainSignal)
+		{
+			if (frequencyDomainSignal.Count == 0)
+				return [.. frequencyDomainSignal];
+			if (BitOperations.IsPow2(frequencyDomainSignal.Count))
+				return FourierTransformOperations.ParallelIterativeInverseDFT(frequencyDomainSignal);
+			return FourierTransformOperations.InverseDFT(frequencyDomainSignal);
 		}
 	}
 }

@@ -276,7 +276,7 @@ namespace FourierTransforms.Operations
 		{
 			timeDomainSignal = BitReverse.ReverseBits(timeDomainSignal);
 			//i is the offset of the elements (left and right) to perform the butterfly operation on
-			for (int offset = 1; offset <= timeDomainSignal.Count / 2; offset *= 2)
+			for (int offset = 1; offset < timeDomainSignal.Count; offset *= 2)
 			{
 				//494.7ms for 2^19 Samples
 				double precomputedFactor = -Math.PI / offset;
@@ -285,13 +285,13 @@ namespace FourierTransforms.Operations
 				{
 					//356.2ms for 2^19 Samples
 					double precomputedFactor2 = precomputedFactor * pair;
+					Complex precomputedFactor3 = new(Math.Cos(precomputedFactor2), Math.Sin(precomputedFactor2));
 					//j counts through every section of size i
 					for (int section = 0; section < timeDomainSignal.Count; section += 2 * offset)
 					{
 						int left = section + pair;
 						int right = left + offset;
-						Complex factor = new(Math.Cos(precomputedFactor2), Math.Sin(precomputedFactor2));
-						factor *= timeDomainSignal[right];
+						Complex factor = precomputedFactor3 * timeDomainSignal[right];
 						timeDomainSignal[right] = timeDomainSignal[left] - factor;
 						timeDomainSignal[left] = timeDomainSignal[left] + factor;
 					}
@@ -303,7 +303,7 @@ namespace FourierTransforms.Operations
 		{
 			frequencyDomainSignal = BitReverse.ReverseBits(frequencyDomainSignal);
 			//i is the offset of the elements (left and right) to perform the butterfly operation on
-			for (int offset = 1; offset <= frequencyDomainSignal.Count / 2; offset *= 2)
+			for (int offset = 1; offset < frequencyDomainSignal.Count; offset *= 2)
 			{
 				//494.7ms for 2^19 Samples
 				double precomputedFactor = Math.PI / offset;
@@ -312,13 +312,70 @@ namespace FourierTransforms.Operations
 				{
 					//356.2ms for 2^19 Samples
 					double precomputedFactor2 = precomputedFactor * pair;
+					Complex precomputedFactor3 = new(Math.Cos(precomputedFactor2), Math.Sin(precomputedFactor2));
 					//j counts through every section of size i
 					for (int section = 0; section < frequencyDomainSignal.Count; section += 2 * offset)
 					{
 						int left = section + pair;
 						int right = left + offset;
-						Complex factor = new(Math.Cos(precomputedFactor2), Math.Sin(precomputedFactor2));
-						factor *= frequencyDomainSignal[right];
+						Complex factor = precomputedFactor3 * frequencyDomainSignal[right];
+						frequencyDomainSignal[right] = frequencyDomainSignal[left] - factor;
+						frequencyDomainSignal[left] = frequencyDomainSignal[left] + factor;
+					}
+				});
+			}
+			for (int i = 0; i < frequencyDomainSignal.Count; i++)
+				frequencyDomainSignal[i] /= frequencyDomainSignal.Count;
+			return [.. frequencyDomainSignal];
+		}
+
+		public static Complex[] BitReverseParallelIterativeDFT(IList<Complex> timeDomainSignal)
+		{
+			timeDomainSignal = BitReverse.UnsafeReverseBits(timeDomainSignal);
+			//i is the offset of the elements (left and right) to perform the butterfly operation on
+			for (int offset = 1; offset < timeDomainSignal.Count; offset *= 2)
+			{
+				//494.7ms for 2^19 Samples
+				double precomputedFactor = -Math.PI / offset;
+				//k counts through all pairs of butterfly operations in section i
+				Parallel.For(0, offset, (pair) =>
+				{
+					//356.2ms for 2^19 Samples
+					double precomputedFactor2 = precomputedFactor * pair;
+					Complex precomputedFactor3 = new(Math.Cos(precomputedFactor2), Math.Sin(precomputedFactor2));
+					//j counts through every section of size i
+					for (int section = 0; section < timeDomainSignal.Count; section += 2 * offset)
+					{
+						int left = section + pair;
+						int right = left + offset;
+						Complex factor = precomputedFactor3 * timeDomainSignal[right];
+						timeDomainSignal[right] = timeDomainSignal[left] - factor;
+						timeDomainSignal[left] = timeDomainSignal[left] + factor;
+					}
+				});
+			}
+			return [.. timeDomainSignal];
+		}
+		public static Complex[] BitReverseParallelIterativeInverseDFT(IList<Complex> frequencyDomainSignal)
+		{
+			frequencyDomainSignal = BitReverse.UnsafeReverseBits(frequencyDomainSignal);
+			//i is the offset of the elements (left and right) to perform the butterfly operation on
+			for (int offset = 1; offset < frequencyDomainSignal.Count; offset *= 2)
+			{
+				//494.7ms for 2^19 Samples
+				double precomputedFactor = Math.PI / offset;
+				//k counts through all pairs of butterfly operations in section i
+				Parallel.For(0, offset, (pair) =>
+				{
+					//356.2ms for 2^19 Samples
+					double precomputedFactor2 = precomputedFactor * pair;
+					Complex precomputedFactor3 = new(Math.Cos(precomputedFactor2), Math.Sin(precomputedFactor2));
+					//j counts through every section of size i
+					for (int section = 0; section < frequencyDomainSignal.Count; section += 2 * offset)
+					{
+						int left = section + pair;
+						int right = left + offset;
+						Complex factor = precomputedFactor3 * frequencyDomainSignal[right];
 						frequencyDomainSignal[right] = frequencyDomainSignal[left] - factor;
 						frequencyDomainSignal[left] = frequencyDomainSignal[left] + factor;
 					}

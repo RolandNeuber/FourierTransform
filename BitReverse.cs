@@ -52,5 +52,42 @@ namespace FourierTransforms
 			}
 			return reverse;
 		}
+
+		public static ulong ReverseBits(ulong number, uint maxBits)
+		{
+			ArgumentOutOfRangeException.ThrowIfGreaterThan<uint>(maxBits, 64);
+			ulong reverse = 0;
+			for (int i = 0; i < maxBits; i++)
+			{
+				reverse <<= 1;
+				reverse |= number & 1;
+				number >>= 1;
+			}
+			return reverse;
+		}
+
+		public static int UnsafeReverseBits(int number, int maxBits)
+		{
+			int reverse = 0;
+			for (int i = 0; i < maxBits; i++)
+			{
+				reverse <<= 1;
+				reverse |= number & 1;
+				number >>>= 1;
+			}
+			return reverse;
+		}
+
+		public static T[] UnsafeReverseBits<T>(IList<T> list)
+		{
+			int logCount = BitOperations.Log2((uint)list.Count);
+			T[] reverse = new T[list.Count];
+			Parallel.For(0, list.Count, (i) =>
+			{
+				int reversedIndex = UnsafeReverseBits(i, logCount);
+				reverse[reversedIndex] = list[i];
+			});
+			return reverse;
+		}
 	}
 }

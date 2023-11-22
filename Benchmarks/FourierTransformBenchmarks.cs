@@ -68,6 +68,37 @@ namespace FourierTransforms.Benchmarks
 				Console.WriteLine();
 			}
 		}
+		public static void CompactAllBenchmark(Func<Complex[], Complex[]>[] functions, uint counts = 15, uint iterations = 1)
+		{
+			int maxLength = "Count".Length;
+			foreach (var function in functions)
+			{
+				maxLength = Math.Max(maxLength, function.GetMethodInfo().Name.Length);
+			}
+			maxLength = Math.Max(maxLength, (int)Math.Pow(2, maxLength));
+
+
+			long[,] times = new long[counts, functions.Length];
+
+			Console.WriteLine();
+			Console.Write(new string(' ', maxLength - "Count".Length + 1) + "Count");
+
+			ArrayFunctions.ToConsole(functions, (func) => { return RuntimeReflectionExtensions.GetMethodInfo(func).Name; });
+
+			Console.WriteLine();
+
+			for (int count = 1; count < counts; count++)
+			{
+				Console.Write(new string(' ', maxLength - (1 << count).ToString().Length + 1) + (1 << count));
+				for (int i = 0; i < functions.Length; i++)
+				{
+					times[count, i] = FourierTransformBenchmark((uint)1 << count, functions[i], iterations);
+					Console.Write(new string(' ', maxLength - times[count, i].ToString().Length + 1) + times[count, i]);
+				}
+				Console.WriteLine();
+			}
+		}
+
 		public static long FourierTransformBenchmark(uint count, Func<Complex[], Complex[]> fourierTransform)
 		{
 			Complex[] input = new Complex[count];
